@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>มกราคม — การติดตามเป้าหมาย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05060f;
+    --card:#0d1026;
+    --card2:#10142e;
+    --line:#1c2148;
+    --text:#eef0fb;
+    --muted:#8891b8;
+    --muted2:#5c6390;
+    --purple:#7c6cf0;
+    --purple-d:#4a3fb8;
+    --blue:#4d8bf5;
+    --blue-d:#2f5fc4;
+    --cyan:#2fd4e0;
+    --cyan-d:#159aa8;
+    --pink:#f14fa0;
+    --pink-d:#c22e79;
+    --red:#ff4d6d;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 20% 0%, #14173a 0%, #05060f 45%) var(--bg);
+    color:var(--text);
+    font-family:'Kanit', sans-serif;
+    padding:22px 14px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px;margin:0 auto;}
+
+  /* ---------- HEADER ---------- */
+  .header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    flex-wrap:wrap; gap:18px; margin-bottom:22px;
+  }
+  .header h1{
+    font-size:30px; font-weight:700; margin:0; letter-spacing:.5px;
+    background:linear-gradient(90deg,#fff,#b9befd);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .header .sub{color:var(--muted); font-size:12.5px; margin-top:4px; font-weight:300; letter-spacing:.5px;}
+
+  .stats{display:flex; gap:12px; flex-wrap:wrap;}
+  .stat-card{
+    background:linear-gradient(160deg,var(--card2),var(--card));
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:10px 18px; min-width:110px; text-align:center;
+  }
+  .stat-card .num{font-size:22px; font-weight:700;}
+  .stat-card .lbl{font-size:10.5px; color:var(--muted); margin-top:2px; white-space:nowrap;}
+  .stat-card.progress{min-width:150px; text-align:left;}
+  .bar-track{background:#1a1e42; border-radius:20px; height:9px; margin-top:8px; overflow:hidden;}
+  .bar-fill{height:100%; background:linear-gradient(90deg,#ff4d6d,#ff8a65); border-radius:20px; transition:width .4s ease;}
+
+  /* ---------- RING OVERVIEW STRIP ---------- */
+  .rings{
+    display:flex; gap:10px; overflow-x:auto; padding:4px 2px 14px;
+    margin-bottom:6px;
+  }
+  .ring-card{
+    flex:0 0 auto; width:118px; background:var(--card);
+    border:1px solid var(--line); border-radius:var(--radius);
+    padding:12px 10px; text-align:center;
+  }
+  .ring-card .dow{font-size:12px; font-weight:600; color:var(--text);}
+  .ring-card .ddate{font-size:9.5px; color:var(--muted2); margin-bottom:6px;}
+  .ring-card svg{display:block; margin:0 auto;}
+  .ring-card .pct{font-size:13px; font-weight:700; fill:var(--text);}
+
+  /* ---------- SECTION TITLES ---------- */
+  .section-title{
+    font-size:14px; font-weight:600; color:var(--text);
+    margin:26px 0 10px 4px; display:flex; align-items:center; gap:8px;
+  }
+  .section-title .dot{width:7px;height:7px;border-radius:50%;background:var(--purple);}
+
+  /* ---------- TABLE ---------- */
+  .table-scroll{
+    overflow-x:auto; border-radius:var(--radius); border:1px solid var(--line);
+    background:var(--card);
+  }
+  table.tracker{border-collapse:collapse; width:100%; min-width:900px; font-size:11px;}
+  table.tracker th, table.tracker td{
+    text-align:center; padding:6px 4px; border-bottom:1px solid var(--line);
+  }
+  .goal-col{
+    position:sticky; left:0; z-index:3; background:var(--card);
+    text-align:left !important; padding-left:12px !important;
+    min-width:150px; font-size:12px; font-weight:400; color:#d9dcf5;
+    border-right:1px solid var(--line);
+  }
+  thead .goal-col{background:var(--card2); z-index:4;}
+  .week-head td{
+    font-weight:600; font-size:11.5px; color:#fff; padding:8px 4px;
+    letter-spacing:.3px;
+  }
+  .dow-row th{font-weight:300; color:#dfe1f7; font-size:10px; padding-bottom:2px;}
+  .date-row th{font-weight:600; font-size:11px; color:#fff; padding-top:0; padding-bottom:6px;}
+
+  .wk1{background:linear-gradient(180deg,var(--purple),var(--purple-d));}
+  .wk2{background:linear-gradient(180deg,var(--blue),var(--blue-d));}
+  .wk3{background:linear-gradient(180deg,var(--cyan),var(--cyan-d));}
+  .wk4{background:linear-gradient(180deg,var(--pink),var(--pink-d));}
+  .wk-col1{background:rgba(124,108,240,.10);}
+  .wk-col2{background:rgba(77,139,245,.10);}
+  .wk-col3{background:rgba(47,212,224,.10);}
+  .wk-col4{background:rgba(241,79,160,.10);}
+
+  .chk{
+    width:16px; height:16px; border-radius:4px; cursor:pointer; appearance:none;
+    border:1.5px solid #454c86; background:#0b0e24; position:relative; margin:0 auto; display:block;
+  }
+  .chk:checked{background:var(--purple); border-color:var(--purple);}
+  .wk-col2 .chk:checked{background:var(--blue); border-color:var(--blue);}
+  .wk-col3 .chk:checked{background:var(--cyan); border-color:var(--cyan);}
+  .wk-col4 .chk:checked{background:var(--pink); border-color:var(--pink);}
+  .chk:checked::after{
+    content:''; position:absolute; left:4px; top:1px; width:4px; height:8px;
+    border:solid #05060f; border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+
+  .summary-row td{font-weight:600; font-size:10.5px; color:#c9cdf2;}
+  .summary-row.pct td{color:#9fe8ef;}
+  .summary-row.ok td{color:#6be6a0;}
+  .summary-row.bad td{color:#ff8a9a;}
+  .summary-row .goal-col{background:var(--card2); font-weight:600; color:#fff;}
+
+  /* ---------- CHART ---------- */
+  .chart-box{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 10px 6px; margin-top:14px;
+  }
+
+  /* ---------- MOOD ---------- */
+  .mood-emoji{
+    font-size:15px; cursor:pointer; user-select:none; opacity:.35;
+    transition:opacity .15s, transform .15s;
+  }
+  .mood-emoji.active{opacity:1; transform:scale(1.15);}
+
+  footer{
+    text-align:center; color:var(--muted2); font-size:10.5px; margin-top:34px; letter-spacing:.5px;
+  }
+  ::-webkit-scrollbar{height:6px; width:6px;}
+  ::-webkit-scrollbar-thumb{background:#2a2f5c; border-radius:10px;}
+
+  /* ---------- SECTION HEADER ROW ---------- */
+  .section-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:26px 4px 10px;
+  }
+  .section-row .section-title{margin:0;}
+
+  .edit-btn{
+    display:flex; align-items:center; gap:6px;
+    background:var(--card2); border:1px solid var(--line); color:var(--text);
+    font-family:'Kanit',sans-serif; font-size:11.5px; font-weight:500;
+    padding:7px 13px; border-radius:20px; cursor:pointer;
+    transition:background .15s, border-color .15s;
+  }
+  .edit-btn:hover{background:#171b3e; border-color:var(--purple);}
+  .edit-btn svg{width:13px; height:13px; flex:0 0 auto;}
+
+  /* ---------- MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(2,3,10,.65); backdrop-filter:blur(3px);
+    display:none; align-items:flex-end; justify-content:center; z-index:50;
+  }
+  .modal-overlay.open{display:flex;}
+  @media (min-width:640px){ .modal-overlay{align-items:center;} }
+
+  .modal{
+    background:linear-gradient(165deg,var(--card2),var(--card));
+    border:1px solid var(--line); border-radius:20px 20px 0 0;
+    width:100%; max-width:460px; max-height:82vh; overflow-y:auto;
+    padding:18px 16px 22px; animation:slideUp .22s ease;
+  }
+  @media (min-width:640px){ .modal{border-radius:18px; max-height:78vh;} }
+  @keyframes slideUp{ from{transform:translateY(24px); opacity:0;} to{transform:translateY(0); opacity:1;} }
+
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .modal-head h3{margin:0; font-size:16px; font-weight:600;}
+  .modal-close{
+    background:none; border:none; color:var(--muted); font-size:20px; line-height:1;
+    cursor:pointer; padding:4px 8px;
+  }
+  .modal-close:hover{color:var(--text);}
+
+  .goal-edit-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:8px;
+    background:#0b0e24; border:1px solid var(--line); border-radius:11px; padding:6px 6px 6px 12px;
+  }
+  .goal-edit-row .swatch{width:9px; height:9px; border-radius:50%; flex:0 0 auto;}
+  .goal-edit-row input[type=text]{
+    flex:1; background:none; border:none; color:var(--text); font-family:'Kanit',sans-serif;
+    font-size:13px; padding:6px 2px; outline:none; min-width:0;
+  }
+  .goal-edit-row .del-btn{
+    flex:0 0 auto; width:28px; height:28px; border-radius:8px; border:none; cursor:pointer;
+    background:rgba(255,77,109,.12); color:var(--red); font-size:15px; line-height:1;
+    display:flex; align-items:center; justify-content:center; transition:background .15s;
+  }
+  .goal-edit-row .del-btn:hover{background:rgba(255,77,109,.28);}
+
+  .add-goal-row{
+    display:flex; gap:8px; margin-top:14px;
+  }
+  .add-goal-row input[type=text]{
+    flex:1; background:#0b0e24; border:1px solid var(--line); border-radius:11px;
+    color:var(--text); font-family:'Kanit',sans-serif; font-size:13px; padding:10px 12px; outline:none;
+  }
+  .add-goal-row input[type=text]:focus{border-color:var(--purple);}
+  .add-goal-row button{
+    flex:0 0 auto; background:linear-gradient(135deg,var(--purple),var(--pink));
+    border:none; color:#fff; font-family:'Kanit',sans-serif; font-weight:600; font-size:13px;
+    padding:0 18px; border-radius:11px; cursor:pointer;
+  }
+  .add-goal-row button:disabled{opacity:.4; cursor:default;}
+
+  .modal-hint{color:var(--muted2); font-size:10.5px; margin-top:12px; line-height:1.6;}
+  .empty-hint{color:var(--muted2); font-size:12px; text-align:center; padding:14px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>มกราคม</h1>
+      <div class="sub">— การติดตามเป้าหมาย —</div>
+    </div>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="num" id="statGoals">10</div>
+        <div class="lbl">จำนวนเป้าหมาย</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statDone">0</div>
+        <div class="lbl">เป้าหมายที่สำเร็จ</div>
+      </div>
+      <div class="stat-card progress">
+        <div class="lbl">ความคืบหน้า</div>
+        <div class="bar-track"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="dot" style="background:var(--cyan)"></span>ภาพรวมสัปดาห์นี้</div>
+  <div class="rings" id="ringStrip"></div>
+
+  <div class="section-row">
+    <div class="section-title"><span class="dot"></span>เป้าหมาย</div>
+    <button class="edit-btn" id="openEditBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      แก้ไขเป้าหมาย
+    </button>
+  </div>
+  <div class="table-scroll">
+    <table class="tracker" id="trackerTable"></table>
+  </div>
+
+  <div class="chart-box">
+    <div class="section-title" style="margin:0 0 6px 4px;"><span class="dot" style="background:var(--pink)"></span>แนวโน้มความคืบหน้า</div>
+    <svg id="trendChart" viewBox="0 0 780 160" width="100%" height="150"></svg>
+  </div>
+
+  <div class="section-title"><span class="dot" style="background:var(--blue)"></span>สภาพจิตใจ</div>
+  <div class="table-scroll">
+    <table class="tracker" id="moodTable"></table>
+  </div>
+
+  <footer>Totrack — สร้างด้วย Claude</footer>
+</div>
+
+<div class="modal-overlay" id="editOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>แก้ไขเป้าหมาย</h3>
+      <button class="modal-close" id="closeEditBtn">&times;</button>
+    </div>
+    <div id="editGoalList"></div>
+    <div class="add-goal-row">
+      <input type="text" id="newGoalInput" placeholder="เพิ่มเป้าหมายใหม่...">
+      <button id="addGoalBtn">เพิ่ม</button>
+    </div>
+    <div class="modal-hint">แก้ไขชื่อได้โดยพิมพ์ในช่อง • กด × เพื่อลบเป้าหมาย (ประวัติการติ๊กของเป้าหมายนั้นจะถูกลบด้วย)</div>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG ================= */
+const DAYS_IN_MONTH = 31;
+let GOALS = [
+  "ตื่นเช้า","วางแผนประจำวัน","ออกกำลังกาย","ทำรายรับรายจ่าย","กินข้าวไม่อ้วน",
+  "เรียนรู้สิ่งใหม่ๆ","อ่านหนังสือ","ทำโปรเจค","งดแอลกอฮอล์","ดื่มน้ำ 2 ลิตร"
+];
+const DOW_TH = ["พฤ","ศ","ส","อา","จ","อ","พ"]; // cycle starting Thursday, as in reference
+const MOOD_ICONS = ["＋","🙂","😐","😔","😴","💪"]; // + = not set, cycles through moods
+
+// target number of goals completed per day (from reference image, days 1-16),
+// remaining days default to 0 (not yet tracked)
+const DAY_TARGETS = [8,7,8,7,10,6,8,7,7,5,7,7,6,6,6,6];
+
+/* ================= DATA GEN ================= */
+function seededShuffle(arr, seed){
+  const a = arr.slice();
+  let s = seed * 9301 + 49297;
+  for(let i=a.length-1;i>0;i--){
+    s = (s*9301+49297) % 233280;
+    const j = Math.floor((s/233280) * (i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// state[goalIndex][dayIndex(0-based)] = boolean
+let state = GOALS.map(()=>Array(DAYS_IN_MONTH).fill(false));
+for(let d=0; d<DAYS_IN_MONTH; d++){
+  const target = DAY_TARGETS[d] || 0;
+  const order = seededShuffle([...Array(10).keys()], d+1);
+  for(let k=0;k<target;k++){ state[order[k]][d] = true; }
+}
+
+const mood = Array(DAYS_IN_MONTH).fill(0); // index into MOOD_ICONS
+
+/* ================= WEEK GROUPING ================= */
+// group days into chunks of 7, colored purple/blue/cyan/pink cycling
+const weekClasses = ["wk1","wk2","wk3","wk4"];
+const weekColClasses = ["wk-col1","wk-col2","wk-col3","wk-col4"];
+function weeksOf(days){
+  const weeks=[];
+  for(let i=0;i<days;i+=7){
+    weeks.push({start:i, end:Math.min(i+7,days)});
+  }
+  return weeks;
+}
+const WEEKS = weeksOf(DAYS_IN_MONTH);
+
+/* ================= BUILD TRACKER TABLE ================= */
+function buildTracker(){
+  const table = document.getElementById('trackerTable');
+  let html = '<thead>';
+
+  // week header row
+  html += '<tr class="week-head"><td class="goal-col">เป้าหมาย</td>';
+  WEEKS.forEach((w,wi)=>{
+    html += `<td colspan="${w.end-w.start}" class="${weekClasses[wi%4]}">สัปดาห์ที่ ${wi+1}</td>`;
+  });
+  html += '</tr>';
+
+  // day-of-week row
+  html += '<tr class="dow-row"><th class="goal-col"></th>';
+  WEEKS.forEach((w,wi)=>{
+    for(let d=w.start; d<w.end; d++){
+      html += `<th class="${weekColClasses[wi%4]}">${DOW_TH[(d) % 7]}</th>`;
+    }
+  });
+  html += '</tr>';
+
+  // date number row
+  html += '<tr class="date-row"><th class="goal-col"></th>';
+  WEEKS.forEach((w,wi)=>{
+    for(let d=w.start; d<w.end; d++){
+      html += `<th class="${weekColClasses[wi%4]}">${d+1}</th>`;
+    }
+  });
+  html += '</tr></thead><tbody>';
+
+  // goal rows
+  GOALS.forEach((g, gi)=>{
+    html += `<tr><td class="goal-col">${g}</td>`;
+    WEEKS.forEach((w,wi)=>{
+      for(let d=w.start; d<w.end; d++){
+        const checked = state[gi][d] ? 'checked' : '';
+        html += `<td class="${weekColClasses[wi%4]}"><input type="checkbox" class="chk" data-goal="${gi}" data-day="${d}" ${checked}></td>`;
+      }
+    });
+    html += '</tr>';
+  });
+
+  // summary rows
+  html += rowTemplate('pct', 'ความคืบหน้า', d => Math.round(dayPct(d)*100)+'%');
+  html += rowTemplate('ok', 'สำเร็จ', d => dayDone(d));
+  html += rowTemplate('bad', 'ไม่สำเร็จ', d => GOALS.length - dayDone(d));
+
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  table.querySelectorAll('.chk').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      const gi = +e.target.dataset.goal, d = +e.target.dataset.day;
+      state[gi][d] = e.target.checked;
+      refreshAll();
+    });
+  });
+}
+
+function rowTemplate(cls, label, fn){
+  let html = `<tr class="summary-row ${cls}"><td class="goal-col">${label}</td>`;
+  WEEKS.forEach((w,wi)=>{
+    for(let d=w.start; d<w.end; d++){
+      html += `<td class="${weekColClasses[wi%4]}" data-${cls}-cell="${d}">${fn(d)}</td>`;
+    }
+  });
+  html += '</tr>';
+  return html;
+}
+
+function dayDone(d){ return GOALS.reduce((s,_,gi)=> s + (state[gi][d]?1:0), 0); }
+function dayPct(d){ return dayDone(d) / GOALS.length; }
+
+/* ================= BUILD MOOD TABLE ================= */
+function buildMood(){
+  const table = document.getElementById('moodTable');
+  let html = '<thead>';
+  html += '<tr class="week-head"><td class="goal-col">สภาพจิตใจ</td>';
+  WEEKS.forEach((w,wi)=> html += `<td colspan="${w.end-w.start}" class="${weekClasses[wi%4]}">สัปดาห์ที่ ${wi+1}</td>`);
+  html += '</tr><tr class="date-row"><th class="goal-col"></th>';
+  WEEKS.forEach((w,wi)=>{
+    for(let d=w.start; d<w.end; d++) html += `<th class="${weekColClasses[wi%4]}">${d+1}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  html += '<tr><td class="goal-col">อารมณ์</td>';
+  WEEKS.forEach((w,wi)=>{
+    for(let d=w.start; d<w.end; d++){
+      html += `<td class="${weekColClasses[wi%4]}"><span class="mood-emoji ${mood[d]?'active':''}" data-day="${d}">${MOOD_ICONS[mood[d]]}</span></td>`;
+    }
+  });
+  html += '</tr></tbody>';
+  table.innerHTML = html;
+
+  table.querySelectorAll('.mood-emoji').forEach(el=>{
+    el.addEventListener('click', e=>{
+      const d = +e.target.dataset.day;
+      mood[d] = (mood[d]+1) % MOOD_ICONS.length;
+      buildMood();
+    });
+  });
+}
+
+/* ================= RING STRIP (image 2 style) ================= */
+function buildRings(){
+  const strip = document.getElementById('ringStrip');
+  strip.innerHTML='';
+  // show a representative recent window, e.g. days 12..16 (0-indexed 11..15)
+  const showDays = [11,12,13,14,15];
+  const colors = [var_('--blue'), var_('--cyan'), var_('--purple'), var_('--pink'), '#ffb020'];
+  showDays.forEach((d,i)=>{
+    const pct = Math.round(dayPct(d)*100);
+    const r = 30, c = 2*Math.PI*r;
+    const off = c - (pct/100)*c;
+    const col = colors[i%colors.length];
+    const card = document.createElement('div');
+    card.className='ring-card';
+    card.innerHTML = `
+      <div class="dow">${DOW_TH[d%7]}</div>
+      <div class="ddate">วันที่ ${d+1}</div>
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="${r}" fill="none" stroke="#1c2148" stroke-width="7"/>
+        <circle cx="36" cy="36" r="${r}" fill="none" stroke="${col}" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"
+          transform="rotate(-90 36 36)"/>
+        <text x="36" y="41" text-anchor="middle" class="pct">${pct}%</text>
+      </svg>`;
+    strip.appendChild(card);
+  });
+}
+function var_(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+/* ================= TREND CHART ================= */
+function buildChart(){
+  const svg = document.getElementById('trendChart');
+  const W = 780, H = 160, pad = 20;
+  const pts = [];
+  for(let d=0; d<DAYS_IN_MONTH; d++){
+    const x = pad + (d/(DAYS_IN_MONTH-1)) * (W - pad*2);
+    const y = H - pad - dayPct(d) * (H - pad*2 - 10);
+    pts.push([x,y]);
+  }
+  const linePath = pts.map((p,i)=> (i===0?'M':'L') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const areaPath = linePath + ` L${pts[pts.length-1][0].toFixed(1)} ${H-pad} L${pts[0][0].toFixed(1)} ${H-pad} Z`;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2fd4e0" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#2fd4e0" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#1c2148" stroke-width="1"/>
+    <path d="${areaPath}" fill="url(#areaGrad)"/>
+    <path d="${linePath}" fill="none" stroke="#4ff0e8" stroke-width="2.2"/>
+  `;
+}
+
+/* ================= STATS ================= */
+function refreshStats(){
+  let total = 0;
+  for(let d=0; d<DAYS_IN_MONTH; d++) total += dayDone(d);
+  document.getElementById('statGoals').textContent = GOALS.length;
+  document.getElementById('statDone').textContent = total;
+  const pct = Math.round((total / (GOALS.length*DAYS_IN_MONTH)) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function refreshAll(){
+  refreshStats();
+  buildChart();
+  buildRings();
+  // update summary row text in place (avoid full rebuild to keep checkbox focus)
+  document.querySelectorAll('[data-pct-cell]').forEach(td=>{
+    const d = +td.dataset.pctCell; td.textContent = Math.round(dayPct(d)*100)+'%';
+  });
+  document.querySelectorAll('[data-ok-cell]').forEach(td=>{
+    const d = +td.dataset.okCell; td.textContent = dayDone(d);
+  });
+  document.querySelectorAll('[data-bad-cell]').forEach(td=>{
+    const d = +td.dataset.badCell; td.textContent = GOALS.length - dayDone(d);
+  });
+}
+
+/* ================= EDIT GOALS ================= */
+const editOverlay = document.getElementById('editOverlay');
+const editGoalList = document.getElementById('editGoalList');
+const newGoalInput = document.getElementById('newGoalInput');
+
+function openEditModal(){
+  renderEditList();
+  editOverlay.classList.add('open');
+  newGoalInput.value = '';
+}
+function closeEditModal(){
+  editOverlay.classList.remove('open');
+}
+
+function renderEditList(){
+  if(GOALS.length === 0){
+    editGoalList.innerHTML = '<div class="empty-hint">ยังไม่มีเป้าหมาย เพิ่มเป้าหมายแรกด้านล่างได้เลย</div>';
+    return;
+  }
+  editGoalList.innerHTML = GOALS.map((g,i)=>{
+    const colorVar = ['--purple','--blue','--cyan','--pink'][i%4];
+    return `
+      <div class="goal-edit-row">
+        <span class="swatch" style="background:var(${colorVar})"></span>
+        <input type="text" value="${g.replace(/"/g,'&quot;')}" data-idx="${i}" class="rename-input">
+        <button class="del-btn" data-idx="${i}" title="ลบเป้าหมายนี้">&times;</button>
+      </div>`;
+  }).join('');
+
+  editGoalList.querySelectorAll('.rename-input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i = +e.target.dataset.idx;
+      GOALS[i] = e.target.value;
+      rebuildEverything(false); // don't re-render modal list (keeps focus)
+    });
+  });
+  editGoalList.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const i = +e.currentTarget.dataset.idx;
+      GOALS.splice(i,1);
+      state.splice(i,1);
+      rebuildEverything(true);
+    });
+  });
+}
+
+function addGoal(){
+  const name = newGoalInput.value.trim();
+  if(!name) return;
+  GOALS.push(name);
+  state.push(Array(DAYS_IN_MONTH).fill(false));
+  newGoalInput.value = '';
+  rebuildEverything(true);
+}
+
+document.getElementById('openEditBtn').addEventListener('click', openEditModal);
+document.getElementById('closeEditBtn').addEventListener('click', closeEditModal);
+editOverlay.addEventListener('click', e=>{ if(e.target === editOverlay) closeEditModal(); });
+document.getElementById('addGoalBtn').addEventListener('click', addGoal);
+newGoalInput.addEventListener('keydown', e=>{ if(e.key === 'Enter') addGoal(); });
+
+function rebuildEverything(rerenderModal){
+  buildTracker();
+  buildMood();
+  refreshAll();
+  if(rerenderModal) renderEditList();
+}
+
+/* ================= INIT ================= */
+buildTracker();
+buildMood();
+buildRings();
+buildChart();
+refreshStats();
+// บันทึกและดึงค่า Checkbox อัตโนมัติ
+const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+checkboxes.forEach((cb, i) => {
+    if (localStorage.getItem("cb_" + i) === "true") {
+        cb.checked = true;
+    }
+    cb.addEventListener("change", () => {
+        localStorage.setItem("cb_" + i, cb.checked);
+        if (typeof refreshStats === "function") refreshStats();
+    });
+});
+if (typeof refreshStats === "function") refreshStats();
+
+</script>
+</body>
+</html>
